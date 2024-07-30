@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . "/Binarynode.php";
+
 class BinaryTree
 {
     private $root;
@@ -14,7 +16,7 @@ class BinaryTree
         return $this->root === null;
     }
 
-    public function add($value)
+    public function add(int $value)
     {
         $node = new BinaryNode($value);
 
@@ -30,25 +32,33 @@ class BinaryTree
     {
         $added = false;
 
-        #kinda ugly... looping while false just to break out when not false
         while ($added === false) {
             if ($node->value < $current->value) {
                 if ($current->left === null) {
                     $current->addChildren($node, $current->right);
+                    $node->updateParent($current);
                     $added = $node;
                     break;
                 } else {
                     $current = $current->left;
                     return $this->recurAddNode($node, $current);
                 }
-            } else {
-                break;
+            } elseif ($node->value > $current->value) {
+                if ($current->right === null) {
+                    $current->addChildren($current->left, $node);
+                    $node->updateParent($current);
+                    $added = $node;
+                    break;
+                } else {
+                    $current = $current->right;
+                    return $this->recurAddNode($node, $current);
+                }
             }
         }
         return $added;
     }
 
-    public function removeNode($node)
+    public function removeNode(BinaryNode $node)
     {
         if ($this->isEmpty()) {
             return false;
@@ -83,7 +93,7 @@ class BinaryTree
         #remove node with 2 children
 
         #remove node with 1 child
-        if ($retrievedNode->left || $retrievedNode->right !== null) {
+        if ($retrievedNode->left xor $retrievedNode->right !== null) {
 
         }
 
@@ -101,7 +111,7 @@ class BinaryTree
         }
     }
 
-    public function getNode($node)
+    public function getNode(BinaryNode $node)
     {
         if ($this->isEmpty()) {
             return false;
@@ -146,6 +156,7 @@ class BinaryTree
         return $exists;
     }
 
+    #this is kinda pointless... could have a parent variable in the node
     private function recurGetParent($child, $current)
     {
         $parent = false;
@@ -169,27 +180,5 @@ class BinaryTree
             }
         }
         return $parent;
-    }
-}
-
-class BinaryNode
-{
-    public $level;
-    public $left;
-    public $right;
-    public $value;
-
-    public function __construct(int $value = null)
-    {
-        $this->level = null;
-        $this->left = null;
-        $this->right = null;
-        $this->value = $value;
-    }
-
-    public function addChildren($left, $right)
-    {
-        $this->left = $left;
-        $this->right = $right;
     }
 }

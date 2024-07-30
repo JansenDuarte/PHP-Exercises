@@ -5,8 +5,12 @@ class BinaryNode
     public $level;
     public $left;
     public $right;
-    public $parent;
     public $value;
+
+
+    private $parent;
+
+
 
     public function __construct(int $value = null)
     {
@@ -23,8 +27,13 @@ class BinaryNode
         $this->right = $right;
     }
 
-    public function updateParent(BinaryNode $parent = null)
+    public function updateParent(BinaryNode &$parent = null)
     {
         $this->parent = $parent;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
     }
 }

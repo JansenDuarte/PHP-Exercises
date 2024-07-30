@@ -1,14 +1,17 @@
 <?php
 
-require __DIR__ . "/Binarynode.php";
+require __DIR__ . "/BinaryNode.php";
 
 class BinaryTree
 {
     private $root;
+    private $count;
+    private $searchedLevel = 1;
 
     public function __construct()
     {
         $this->root = null;
+        $this->count = 0;
     }
 
     public function isEmpty()
@@ -16,11 +19,14 @@ class BinaryTree
         return $this->root === null;
     }
 
+    //TODO: if I had an array of the added values I could skip the attempt to add the value
     public function add(int $value)
     {
         $node = new BinaryNode($value);
 
         if ($this->isEmpty()) {
+            $node->level = 0;
+            $this->count++;
             $this->root = $node;
             return true;
         } else {
@@ -37,24 +43,34 @@ class BinaryTree
                 if ($current->left === null) {
                     $current->addChildren($node, $current->right);
                     $node->updateParent($current);
+                    $node->level = $this->searchedLevel;
+                    $this->count++;
                     $added = $node;
                     break;
                 } else {
                     $current = $current->left;
+                    $this->searchedLevel++;
                     return $this->recurAddNode($node, $current);
                 }
             } elseif ($node->value > $current->value) {
                 if ($current->right === null) {
                     $current->addChildren($current->left, $node);
                     $node->updateParent($current);
+                    $node->level = $this->searchedLevel;
+                    $this->count++;
                     $added = $node;
                     break;
                 } else {
                     $current = $current->right;
+                    $this->searchedLevel++;
                     return $this->recurAddNode($node, $current);
                 }
+            } else {
+                $this->searchedLevel = 1;
+                return false;   //Value already exists inside the tree
             }
         }
+        $this->searchedLevel = 1;
         return $added;
     }
 
@@ -70,7 +86,7 @@ class BinaryTree
             return false;
         }
 
-        #remove root node
+        //remove root node
         if ($retrievedNode->value === $this->root->value) {
             $current = $this->root->left;
 
@@ -90,17 +106,17 @@ class BinaryTree
             return true;
         }
 
-        #remove node with 2 children
+        //remove node with 2 children
 
-        #remove node with 1 child
+        //remove node with 1 child
         if ($retrievedNode->left xor $retrievedNode->right !== null) {
 
         }
 
-        #remove leaf node
+        //remove leaf node
         if ($retrievedNode->left === null && $retrievedNode->right === null) {
             $parent = $this->recurGetParent($retrievedNode, $this->root);
-            #dont know if this comparison works
+            //dont know if this comparison works
             if ($parent->left->value && $retrievedNode->value === $parent->left->value) {
                 $parent->left = null;
                 return true;
@@ -128,7 +144,7 @@ class BinaryTree
     {
         $exists = false;
 
-        #kinda ugly... looping while false just to break out when not false
+        //kinda ugly... looping while false just to break out when not false
         while ($exists === false) {
             if ($node->value < $current->value) {
                 if ($current->left === null) {
@@ -156,7 +172,7 @@ class BinaryTree
         return $exists;
     }
 
-    #this is kinda pointless... could have a parent variable in the node
+    //this is kinda pointless... could have a parent variable in the node
     private function recurGetParent($child, $current)
     {
         $parent = false;
@@ -180,5 +196,12 @@ class BinaryTree
             }
         }
         return $parent;
+    }
+
+    public function printTree()
+    {
+        $ret = "Nº of items: " . $this->count . "\n";
+        $ret .= "Root: " . $this->root->value . "\t Left: " . $this->root->left->value . "\t Right: " . $this->root->right->value;
+        return $ret;
     }
 }

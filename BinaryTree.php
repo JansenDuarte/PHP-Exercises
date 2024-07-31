@@ -2,11 +2,14 @@
 
 require __DIR__ . "/BinaryNode.php";
 
+
+//TODO my tree is not self-centering....
 class BinaryTree
 {
     private $root;
-    private $count;
     private $searchedLevel = 1;
+
+    private array $items = [];
 
     public function __construct()
     {
@@ -25,8 +28,8 @@ class BinaryTree
         $node = new BinaryNode($value);
 
         if ($this->isEmpty()) {
+            $this->items[] = $node->value;
             $node->level = 0;
-            $this->count++;
             $this->root = $node;
             return true;
         } else {
@@ -41,10 +44,7 @@ class BinaryTree
         while ($added === false) {
             if ($node->value < $current->value) {
                 if ($current->left === null) {
-                    $current->addChildren($node, $current->right);
-                    $node->updateParent($current);
-                    $node->level = $this->searchedLevel;
-                    $this->count++;
+                    $this->internalAddNode($node, $current, Side::LEFT);
                     $added = $node;
                     break;
                 } else {
@@ -54,10 +54,7 @@ class BinaryTree
                 }
             } elseif ($node->value > $current->value) {
                 if ($current->right === null) {
-                    $current->addChildren($current->left, $node);
-                    $node->updateParent($current);
-                    $node->level = $this->searchedLevel;
-                    $this->count++;
+                    $this->internalAddNode($node, $current, Side::RIGHT);
                     $added = $node;
                     break;
                 } else {
@@ -72,6 +69,21 @@ class BinaryTree
         }
         $this->searchedLevel = 1;
         return $added;
+    }
+
+    private function internalAddNode(BinaryNode &$node, BinaryNode &$parent, int $side)
+    {
+        switch ($side) {
+            case Side::LEFT:
+                $parent->addChildren($node, $parent->right);
+                break;
+            case Side::RIGHT:
+                $parent->addChildren($parent->left, $node);
+                break;
+        }
+        $node->updateParent($parent);
+        $node->level = $this->searchedLevel;
+        $this->items[] = $node->value;
     }
 
     public function removeNode(BinaryNode $node)
@@ -200,8 +212,22 @@ class BinaryTree
 
     public function printTree()
     {
-        $ret = "Nº of items: " . $this->count . "\n";
-        $ret .= "Root: " . $this->root->value . "\t Left: " . $this->root->left->value . "\t Right: " . $this->root->right->value;
+        $ret = "Tree Info:\n\n";
+        $ret .= "\tNº of items: " . count($this->items) . "\n\n";
+        $ret .= "\tValues of items: \n";
+
+        foreach ($this->items as $value) {
+            $ret .= "\t" . $value . "\n";
+        }
+
+        //TODO: figure out how to traverse the tree to show all the values and its relations
+
         return $ret;
     }
+}
+
+class Side
+{
+    const LEFT = -1;
+    const RIGHT = 1;
 }

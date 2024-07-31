@@ -12,4 +12,4 @@ $tree->add(12);
 $tree->add(1);
 $tree->add(4);
 
-echo "Tree info: \n" . $tree->printTree();
+echo $tree->printTree();

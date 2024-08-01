@@ -4,30 +4,31 @@ require __DIR__ . "/BinaryNode.php";
 
 
 //TODO my tree is not self-centering....
+
+//FIXME: I did everything in a rush... Code is kinda shitty, and has a lot o room for improvement and cleaning up
 class BinaryTree
 {
     private $root;
     private $searchedLevel = 1;
+    private $maxLevel = 0;
 
     private array $items = [];
 
     public function __construct()
     {
-        $this->root = null;
-        $this->count = 0;
+        $this->root = null; //doesnt seem right to have a tree without a root....
     }
 
-    public function isEmpty()
-    {
-        return $this->root === null;
-    }
-
-    //TODO: if I had an array of the added values I could skip the attempt to add the value
     public function add(int $value)
     {
+        if (in_array($value, $this->items)) {
+            echo "\n\nTrying to add duplicate value: $value. Aborting addition to the tree.\n\n";
+            return false;
+        }
+
         $node = new BinaryNode($value);
 
-        if ($this->isEmpty()) {
+        if ($this->root === null) {
             $this->items[] = $node->value;
             $node->level = 0;
             $this->root = $node;
@@ -37,7 +38,7 @@ class BinaryTree
         }
     }
 
-    private function recurAddNode($node, $current)
+    private function recurAddNode(BinaryNode $node, BinaryNode $current)
     {
         $added = false;
 
@@ -62,9 +63,6 @@ class BinaryTree
                     $this->searchedLevel++;
                     return $this->recurAddNode($node, $current);
                 }
-            } else {
-                $this->searchedLevel = 1;
-                return false;   //Value already exists inside the tree
             }
         }
         $this->searchedLevel = 1;
@@ -83,16 +81,25 @@ class BinaryTree
         }
         $node->updateParent($parent);
         $node->level = $this->searchedLevel;
+
+        if ($this->searchedLevel > $this->maxLevel) {
+            $this->maxLevel++;
+        }
+
         $this->items[] = $node->value;
     }
 
-    public function removeNode(BinaryNode $node)
+    public function removeNode($value)
     {
-        if ($this->isEmpty()) {
+        if ($this->root === null) {
             return false;
         }
 
-        $retrievedNode = $this->getNode($node);
+        if (!in_array($value, $this->items)) {
+            return false;
+        }
+
+        $retrievedNode = $this->getNode($value);
 
         if ($retrievedNode == false) {
             return false;
@@ -122,7 +129,6 @@ class BinaryTree
 
         //remove node with 1 child
         if ($retrievedNode->left xor $retrievedNode->right !== null) {
-
         }
 
         //remove leaf node
@@ -139,44 +145,46 @@ class BinaryTree
         }
     }
 
-    public function getNode(BinaryNode $node)
+    public function getNode($value): BinaryNode|bool
     {
-        if ($this->isEmpty()) {
+        if ($this->root === null || !in_array($value, $this->items)) {
             return false;
         }
+
         $current = $this->root;
-        if ($node->value === $this->root->value) {
-            return true;
+
+        if ($value === $this->root->value) {
+            return $this->root;
         } else {
-            return $this->recurGetNode($node, $current);
+            return $this->recurGetNode($value, $current);
         }
     }
 
-    private function recurGetNode($node, $current)
+    private function recurGetNode($value, $current): BinaryNode|bool
     {
         $exists = false;
 
         //kinda ugly... looping while false just to break out when not false
         while ($exists === false) {
-            if ($node->value < $current->value) {
+            if ($value < $current->value) {
                 if ($current->left === null) {
                     break;
-                } elseif ($node->value == $current->left->value) {
+                } elseif ($value == $current->left->value) {
                     $exists = $current->left;
                     break;
                 } else {
                     $current = $current->left;
-                    return $this->recurGetNode($node, $current);
+                    return $this->recurGetNode($value, $current);
                 }
-            } elseif ($node->value > $current->value) {
+            } elseif ($value > $current->value) {
                 if ($current->right === null) {
                     break;
-                } elseif ($node->value == $current->right->value) {
+                } elseif ($value == $current->right->value) {
                     $exists = $current->right;
                     break;
                 } else {
                     $current = $current->right;
-                    return $this->recurGetNode($node, $current);
+                    return $this->recurGetNode($value, $current);
                 }
             }
         }
@@ -214,13 +222,42 @@ class BinaryTree
     {
         $ret = "Tree Info:\n\n";
         $ret .= "\tNº of items: " . count($this->items) . "\n\n";
-        $ret .= "\tValues of items: \n";
+        $ret .= "\tValues of items: ";
 
         foreach ($this->items as $value) {
-            $ret .= "\t" . $value . "\n";
+            $ret .= $value . ", ";
         }
 
         //TODO: figure out how to traverse the tree to show all the values and its relations
+        $ret .= "\n\n\n" . $this->traverseTree();
+
+        return $ret;
+    }
+
+    private function traverseTree(): string
+    {
+
+        if ($this->root === null) {
+            return "Empty tree... try adding a value with addNode(int value)";
+        }
+
+        //DEBUG ugly, but I'm just trying to understand how to print this
+        $aux = $this->maxLevel * 2;
+
+        $ret = str_repeat(" ", $aux);
+        $value = sprintf("[%s]", $this->root->value);
+        $ret .= $value . str_repeat(" ", $aux) . "\n";
+
+        $aux--;
+
+        $ret .= str_repeat(" ", $aux) . "/    \\" . str_repeat(" ", $aux) . "\n";
+
+        $aux--;
+
+        $value = sprintf("[%s]", $this->root->left->value);
+        $ret .= str_repeat(" ", $aux) . $value;
+        $value = sprintf("[%s]", $this->root->right->value);
+        $ret .= str_repeat(" ", $aux) . $value;
 
         return $ret;
     }

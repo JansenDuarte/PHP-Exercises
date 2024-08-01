@@ -36,4 +36,15 @@ class BinaryNode
     {
         return $this->parent;
     }
+
+
+
+
+
+    public function __tostring(): string
+    {
+        $ret = "\nBinaryNode\n{\n\tValue:";
+        $ret .= "\t" . $this->value . "\n}";
+        return $ret;
+    }
 }

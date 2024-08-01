@@ -9,6 +9,7 @@ $tree->add(3);
 $tree->add(19);
 $tree->add(30);
 $tree->add(12);
+$tree->add(12);
 $tree->add(1);
 $tree->add(4);
 
